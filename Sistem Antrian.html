@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Sistem Antrian Pelayanan Statistik Terpadu BPS Kabupaten Magetan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;400&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Roboto', Arial, sans-serif;
+      background: linear-gradient(135deg, #53a6ff, #45e3c1 70%, #fffde4 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 40px;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      padding: 0 10px;
+      text-align: center;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .header .logo {
+      width: 70px;
+      height: 70px;
+      margin-right: 15px;
+      flex-shrink: 0;
+      background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Lambang_Badan_Pusat_Statistik_%28BPS%29_Indonesia.svg/991px-Lambang_Badan_Pusat_Statistik_%28BPS%29_Indonesia.svg.png');
+      background-repeat: no-repeat;
+      background-size: contain;
+      background-position: center;
+    }
+    .header h1 {
+        margin: 0;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 2.2rem;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        color: #1088e8;
+        text-shadow: 0 2px 12px #aae6ffc9;
+        text-align: center;
+        flex-grow: 1;
+    }
+    .container {
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.06), 0 1.5px 6px rgba(11, 128, 255, 0.08);
+      padding: 36px 28px 28px 28px;
+      max-width: 400px;
+      width: 95vw;
+      min-width: 300px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin: 0 0 16px 0;
+      letter-spacing: 1.5px;
+      color: #1088e8;
+      text-shadow: 0 2px 12px #aae6ffc9;
+      text-align: center;
+    }
+    .now-serving-label {
+      font-size: 1.15rem;
+      color: #333;
+      margin-bottom: 6px;
+      font-weight: 400;
+    }
+    .currently {
+      font-size: 3.2rem;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      color: #0dc3b9;
+      background: linear-gradient(90deg, #4ca3ff 60%, #20e3c4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0 0 13px 0;
+      text-shadow: 0 2px 18px #57ebffc5;
+      transition: transform 0.28s;
+    }
+    .queue-list-title{
+      margin: 15px 0 8px 0;
+      color: #1088e8;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    ul#queueList {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 12px 0;
+      min-height: 25px;
+      text-align: center;
+      width: 100%;
+    }
+    ul#queueList li {
+      padding: 10px 0;
+      font-size: 1.18rem;
+      font-family: 'Montserrat', sans-serif;
+      border-bottom: 1px solid #e7f6ff;
+      color: #304063;
+      transition: background 0.19s;
+      position: relative;
+      animation: fadeIn 0.4s;
+    }
+    ul#queueList li:last-child { border-bottom: none; }
+    .empty-queue {
+      color: #bbb;
+      font-size: 1rem;
+      margin: 0 0 18px 0;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      width: 100%;
+      margin-top: 6px;
+      margin-bottom: 13px;
+    }
+    .action-btn {
+      background: linear-gradient(90deg, #42a7fa 60%, #4ef5d7 100%);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      padding: 13px 0;
+      cursor: pointer;
+      box-shadow: 0 3px 12px #36ceff54;
+      transition: background 0.18s, transform 0.14s;
+      outline: none;
+    }
+    .action-btn:hover, .action-btn:focus {
+      background: linear-gradient(90deg, #228ff7 60%, #13daa1 100%);
+      transform: translateY(-1.5px) scale(1.04);
+    }
+    .reset-btn {
+      background: linear-gradient(90deg, #ff7272 60%, #ff92ae 100%);
+      box-shadow: 0 3px 12px #fd2f2f2c;
+    }
+    .reset-btn:hover, .reset-btn:focus {
+      background: linear-gradient(90deg, #ff3b3b 60%, #fd5e8c 100%);
+    }
+
+    .footer {
+      margin-top: 36px;
+      color: #22537c8a;
+      font-size: 0.98rem;
+      letter-spacing: .05em;
+      text-align: center;
+      font-family: 'Montserrat', sans-serif;
+      opacity: 0.82;
+    }
+
+    /* Modal Styles */
+    #modal {
+      display: none;
+      position: fixed;
+      z-index: 15;
+      left: 0; top: 0;
+      width: 100vw; height: 100vh;
+      background: #232f3890;
+      align-items: center;
+      justify-content: center;
+    }
+    #modal .modal-content {
+      background: #fff;
+      border-radius: 10px;
+      padding: 24px 22px 14px 22px;
+      box-shadow: 0 4px 18px #48e1f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #modal .modal-content p {
+      color: #263257;
+      margin-bottom: 18px;
+      margin-top: 0;
+      font-weight: 700;
+      font-size: 1.07em;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 13px;
+      margin-bottom: 12px;
+    }
+    .modal-btn {
+      padding: 6.5px 22px;
+      border: none;
+      border-radius: 7px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 1em;
+      cursor: pointer;
+      background: #45aafa;
+      color: #fff;
+      transition: background .16s;
+    }
+    .modal-btn.cancel {
+      background: #c5c8d2;
+      color: #3e3e3e;
+    }
+    .modal-btn:hover {
+      background: #29c8b8;
+    }
+    .modal-btn.cancel:hover {
+      background: #a6a7ae;
+    }
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity:0; transform: translateY(20px);}
+      to { opacity:1; transform: translateY(0);}
+    }
+    
+    /* Hidden print ticket */
+    .print-ticket {
+      display: none;
+    }
+
+    /* FIXED PRINT STYLES */
+    @media print {
+      * {
+        visibility: hidden;
+        margin: 0;
+        padding: 0;
+      }
+      
+      body {
+        background: white !important;
+        margin: 0;
+        padding: 0;
+      }
+      
+      .print-ticket {
+        visibility: visible !important;
+        display: block !important;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 74mm;
+        height: 105mm;
+        margin: 0;
+        padding: 5mm;
+        background: white !important;
+        font-family: 'Roboto', Arial, sans-serif;
+        box-sizing: border-box;
+        page-break-after: always;
+      }
+      
+      .print-ticket * {
+        visibility: visible !important;
+        display: block !important;
+      }
+      
+      .print-ticket .ticket-header {
+        text-align: center;
+        margin-bottom: 8px;
+      }
+      
+      .print-ticket .ticket-logo {
+        width: 20mm;
+        height: 20mm;
+        background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Lambang_Badan_Pusat_Statistik_%28BPS%29_Indonesia.svg/991px-Lambang_Badan_Pusat_Statistik_%28BPS%29_Indonesia.svg.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        margin: 0 auto 5px auto;
+      }
+      
+      .print-ticket .ticket-title {
+        font-size: 8pt !important;
+        font-weight: bold !important;
+        color: #000 !important;
+        line-height: 1.2;
+        margin: 0 0 5px 0;
+        text-align: center;
+      }
+      
+      .print-ticket .ticket-subtitle {
+        font-size: 6pt !important;
+        color: #666 !important;
+        margin: 0 0 10px 0;
+        text-align: center;
+      }
+      
+      .print-ticket .ticket-number {
+        font-size: 24pt !important;
+        font-weight: bold !important;
+        color: #1088e8 !important;
+        text-align: center;
+        margin: 15px 0;
+        border: 2px solid #1088e8;
+        padding: 10px;
+        border-radius: 8px;
+        display: block !important;
+      }
+      
+      .print-ticket .ticket-info {
+        font-size: 6pt !important;
+        text-align: center;
+        color: #666 !important;
+        margin-top: 10px;
+        line-height: 1.3;
+      }
+      
+      .print-ticket .ticket-info div {
+        display: block !important;
+        margin: 2px 0;
+      }
+      
+      .print-ticket .ticket-footer {
+        font-size: 5pt !important;
+        text-align: center;
+        color: #999 !important;
+        margin-top: 8px;
+        border-top: 1px solid #ddd;
+        padding-top: 5px;
+      }
+    }
+
+    @media (max-width: 768px) {
+        .header {
+            flex-direction: column;
+            text-align: center;
+        }
+        .header .logo {
+            margin-right: 0;
+            margin-bottom: 10px;
+            width: 60px;
+            height: 60px;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+        }
+    }
+    @media (max-width: 480px) {
+      .container { padding: 16px 6px 14px 6px; min-width: unset; }
+      .currently { font-size: 2.1rem}
+      .header .logo { 
+        width: 50px; 
+        height: 50px; 
+      }
+      .header h1 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo"></div>
+    <h1>Sistem Antrian Pelayanan Statistik Terpadu BPS Kabupaten Magetan</h1>
+  </div>
+  <div class="container">
+    <div class="now-serving-label">Sedang Dipanggil</div>
+    <div id="currentQueue" class="currently">-</div>
+
+    <div class="queue-list-title">Daftar Antrian Menunggu</div>
+    <ul id="queueList">
+      </ul>
+    <span class="empty-queue" id="emptyQueueMsg">Tidak ada antrian.</span>
+
+    <div class="actions">
+      <button class="action-btn" id="takeQueueBtn">Ambil Antrian</button>
+      <button class="action-btn" id="nextQueueBtn">Panggil Berikutnya</button>
+      <button class="action-btn" id="printQueueBtn">Cetak Antrian</button>
+      <button class="action-btn reset-btn" id="resetQueueBtn">Reset Antrian</button>
+    </div>
+  </div>
+  <div class="footer">
+    &copy; 2024 Sistem Antrian Modern &mdash; Desain oleh BLACKBOXAI
+  </div>
+
+  <div id="modal">
+    <div class="modal-content">
+      <p id="modal-message"></p>
+      <div class="modal-actions">
+        <button class="modal-btn" id="modal-ok">OK</button>
+        <button class="modal-btn cancel" id="modal-cancel">Batal</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="print-ticket" id="printTicket">
+    <div class="ticket-header">
+      <div class="ticket-logo"></div>
+      <div class="ticket-title">BADAN PUSAT STATISTIK</div>
+      <div class="ticket-subtitle">Kabupaten Magetan</div>
+    </div>
+    <div class="ticket-number" id="ticketNumber">001</div>
+    <div class="ticket-info">
+      <div>Pelayanan Statistik Terpadu</div>
+      <div>Tanggal: <span id="ticketDate"></span></div>
+      <div>Waktu: <span id="ticketTime"></span></div>
+    </div>
+    <div class="ticket-footer">
+      Harap simpan tiket ini sampai dilayani<br>
+      Terima kasih atas kunjungan Anda
+    </div>
+  </div>
+
+  <audio id="ding-sound" src="https://cdnjs.cloudflare.com/ajax/libs/ion-sound/3.0.7/sounds/bell_ring.mp3"></audio>
+
+  <script>
+    // ====================
+    // Antrian State (using memory only)
+    // ====================
+    let queue = []; // Array of numbers
+    let current = null;
+    let lastQueueNumber = 0;
+
+    // ====================
+    // Rendering
+    // ====================
+    function render() {
+      // RENDER CURRENT (SEDANG DIPANGGIL)
+      const currentDiv = document.getElementById('currentQueue');
+      if (current == null) {
+        currentDiv.innerHTML = '-';
+      } else {
+        currentDiv.innerHTML = current.toString().padStart(3, "0");
+        currentDiv.animate([{transform:'scale(1.35)'},{transform:'scale(1)'}],{duration:350,timingFunction:"ease"})
+      }
+      // RENDER QUEUE LIST
+      const ul = document.getElementById('queueList');
+      ul.innerHTML = '';
+      if(queue.length === 0){
+        document.getElementById('emptyQueueMsg').style.display = '';
+      } else {
+        document.getElementById('emptyQueueMsg').style.display = 'none';
+        queue.forEach(function(num) {
+          const li = document.createElement('li');
+          li.textContent = "Antrian " + num.toString().padStart(3,"0");
+          ul.appendChild(li);
+        });
+      }
+    }
+
+    document.getElementById('takeQueueBtn').addEventListener('click', function() {
+      lastQueueNumber += 1;
+      queue.push(lastQueueNumber);
+      showNotif("Berhasil! Ambil antrian anda: <b>" + (lastQueueNumber).toString().padStart(3,"0") + "</b>.<br><small>Klik 'Cetak Antrian' untuk mencetak tiket.</small>");
+      render();
+      ding();
+    });
+
+    document.getElementById('nextQueueBtn').addEventListener('click', function() {
+      if(queue.length === 0){
+        showNotif("Tidak ada antrian menunggu yang bisa dipanggil.");
+        return;
+      }
+      current = queue.shift();
+      render();
+      ding();
+    });
+
+    document.getElementById('resetQueueBtn').addEventListener('click', function() {
+      showModal("Anda yakin ingin me-<b>reset</b> seluruh antrian dan nomor?", function(){
+        queue = [];
+        current = null;
+        lastQueueNumber = 0;
+        render();
+        showNotif("Antrian telah direset.");
+      });
+    });
+
+    document.getElementById('printQueueBtn').addEventListener('click', function() {
+      if (lastQueueNumber === 0) {
+        showNotif("Belum ada antrian yang bisa dicetak. Silakan ambil antrian terlebih dahulu.");
+        return;
+      }
+      printLastTicket();
+    });
+
+    // ====================
+    // MODAL Confirmation & Notification
+    // ====================
+    // Modal
+    function showModal(message, onOk){
+      document.getElementById('modal-message').innerHTML = message;
+      document.getElementById('modal').style.display = "flex";
+      const okBtn = document.getElementById('modal-ok');
+      const cancelBtn = document.getElementById('modal-cancel');
+      function cleanup() {
+        okBtn.onclick = null;
+        cancelBtn.onclick = null;
+        document.getElementById('modal').style.display = "none";
+      }
+      okBtn.onclick = ()=>{
+        cleanup();
+        if (onOk) onOk();
+      }
+      cancelBtn.onclick = cleanup;
+    }
+    // Notification (small modal)
+    function showNotif(message){
+      showModal(message, null);
+      document.getElementById('modal-cancel').style.display="none";
+      document.getElementById('modal-ok').textContent="OK";
+      setTimeout(()=> {
+        document.getElementById('modal').style.display = "none";
+        document.getElementById('modal-cancel').style.display="";
+        document.getElementById('modal-ok').textContent="OK";
+      },1800);
+    }
+
+    // Print function
+    function printLastTicket() {
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: '2-digit', 
+        year: 'numeric'
+      });
+      const timeStr = now.toLocaleTimeString('id-ID', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      
+      document.getElementById('ticketNumber').textContent = lastQueueNumber.toString().padStart(3, "0");
+      document.getElementById('ticketDate').textContent = dateStr;
+      document.getElementById('ticketTime').textContent = timeStr;
+      
+      // Show print dialog
+      window.print();
+    }
+
+    // Sound
+    function ding() {
+      const snd = document.getElementById('ding-sound');
+      try {
+        snd.currentTime = 0;
+        snd.play().catch(e => {
+          // Audio play failed, probably due to browser autoplay policy
+          console.log('Audio play failed:', e);
+        });
+      } catch(e) {
+        console.log('Audio error:', e);
+      }
+    }
+
+    // ====================
+    // INISIALISASI
+    // ====================
+    function init() {
+      render();
+    }
+    window.onload = init;
+  </script>
+</body>
+</html>
